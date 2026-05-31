@@ -73,7 +73,7 @@ export default function LightHero() {
               <ArrowRight size={18} />
             </Button>
             <Button asChild variant="outline" size="lg" className="rounded-xl px-6">
-              <a href="/resume.pdf" download>
+              <a href="/Aishwarya_Ugale_ATS_Resume.pdf" download="Aishwarya_Ugale_ATS_Resume.pdf">
                 <Download size={18} />
                 Download CV
               </a>

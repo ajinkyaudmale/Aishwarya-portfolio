@@ -107,7 +107,7 @@ export default function DarkHero() {
               View Projects
             </Button>
             <Button asChild variant="ghost" size="lg" className="rounded-full border-2 border-neon-violet/50" data-cursor>
-              <a href="/resume.pdf" download>
+              <a href="/Aishwarya_Ugale_ATS_Resume.pdf" download="Aishwarya_Ugale_ATS_Resume.pdf">
                 <Download size={18} />
                 Download Resume
               </a>
@@ -170,7 +170,7 @@ export default function DarkHero() {
               View Projects
             </Button>
             <Button asChild variant="ghost" size="lg" data-cursor>
-              <a href="/resume.pdf" download>
+              <a href="/Aishwarya_Ugale_ATS_Resume.pdf" download="Aishwarya_Ugale_ATS_Resume.pdf">
                 Download Resume
               </a>
             </Button>

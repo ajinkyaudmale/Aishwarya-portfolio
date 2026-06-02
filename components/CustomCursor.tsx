@@ -6,6 +6,7 @@ import gsap from "gsap";
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia(
@@ -23,12 +24,20 @@ export default function CustomCursor() {
     const dotY = gsap.quickTo(dot, "y", { duration: 0.12, ease: "power3.out" });
     const ringX = gsap.quickTo(ring, "x", { duration: 0.35, ease: "power3.out" });
     const ringY = gsap.quickTo(ring, "y", { duration: 0.35, ease: "power3.out" });
+    const interactiveSelector = "a, button, [data-cursor], input, textarea, select, label";
 
-    const onMove = (e: MouseEvent) => {
-      dotX(e.clientX);
-      dotY(e.clientY);
-      ringX(e.clientX);
-      ringY(e.clientY);
+    gsap.set([dot, ring], { x: window.innerWidth / 2, y: window.innerHeight / 2 });
+
+    const onMove = (e: PointerEvent) => {
+      if (rafRef.current) {
+        window.cancelAnimationFrame(rafRef.current);
+      }
+      rafRef.current = window.requestAnimationFrame(() => {
+        dotX(e.clientX);
+        dotY(e.clientY);
+        ringX(e.clientX);
+        ringY(e.clientY);
+      });
     };
 
     const onEnter = () => {
@@ -41,28 +50,49 @@ export default function CustomCursor() {
       gsap.to(dot, { scale: 1, duration: 0.25 });
     };
 
-    const onMouseOver = (e: MouseEvent) => {
-      const target = (e.target as Element)?.closest(
-        "a, button, [data-cursor], input, textarea, select, label"
-      );
+    const onPointerOver = (e: PointerEvent) => {
+      const target = (e.target as Element | null)?.closest(interactiveSelector);
       if (target) onEnter();
     };
 
-    const onMouseOut = (e: MouseEvent) => {
-      const related = (e.relatedTarget as Element)?.closest(
-        "a, button, [data-cursor], input, textarea, select, label"
-      );
+    const onPointerOut = (e: PointerEvent) => {
+      const related = (e.relatedTarget as Element | null)?.closest(interactiveSelector);
       if (!related) onLeave();
     };
 
-    window.addEventListener("mousemove", onMove);
-    document.addEventListener("mouseover", onMouseOver);
-    document.addEventListener("mouseout", onMouseOut);
+    const onWindowBlur = () => onLeave();
+    const onPointerLeaveWindow = () => onLeave();
+    const onPointerEnterWindow = () => {
+      gsap.set([dot, ring], { opacity: 1 });
+    };
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        onLeave();
+        gsap.set([dot, ring], { opacity: 0 });
+      } else {
+        gsap.set([dot, ring], { opacity: 1 });
+      }
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    document.addEventListener("pointerover", onPointerOver, { passive: true });
+    document.addEventListener("pointerout", onPointerOut, { passive: true });
+    window.addEventListener("blur", onWindowBlur);
+    document.addEventListener("mouseleave", onPointerLeaveWindow);
+    document.addEventListener("mouseenter", onPointerEnterWindow);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
-      window.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mouseover", onMouseOver);
-      document.removeEventListener("mouseout", onMouseOut);
+      if (rafRef.current) {
+        window.cancelAnimationFrame(rafRef.current);
+      }
+      window.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerover", onPointerOver);
+      document.removeEventListener("pointerout", onPointerOut);
+      window.removeEventListener("blur", onWindowBlur);
+      document.removeEventListener("mouseleave", onPointerLeaveWindow);
+      document.removeEventListener("mouseenter", onPointerEnterWindow);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 
